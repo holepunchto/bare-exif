@@ -7,11 +7,7 @@ exports.constants = {
 
 exports.Data = class EXIFData {
   constructor(data) {
-    this._handle = binding.initData(
-      data.buffer,
-      data.byteOffset,
-      data.byteLength
-    )
+    this._handle = binding.initData(data.buffer, data.byteOffset, data.byteLength)
   }
 
   destroy() {
