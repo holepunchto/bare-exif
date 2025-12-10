@@ -9,6 +9,10 @@ typedef struct {
   ExifData *handle;
 } bare_exif_data_t;
 
+typedef struct {
+  ExifEntry *handle;
+} bare_exif_entry_t;
+
 static js_value_t *
 bare_exif_init_data(js_env_t *env, js_callback_info_t *info) {
   int err;
@@ -45,6 +49,101 @@ bare_exif_init_data(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_exif_get_entry(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 2);
+
+  bare_exif_data_t *data;
+  err = js_get_arraybuffer_info(env, argv[0], (void **) &data, NULL);
+  assert(err == 0);
+
+  int64_t exif_tag;
+  err = js_get_value_int64(env, argv[1], &exif_tag);
+  assert(err == 0);
+
+  ExifEntry *entry = exif_data_get_entry(data->handle, (ExifTag)exif_tag);
+
+  if (entry == NULL) {
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_object(env, &result);
+  assert(err == 0);
+
+  js_value_t *handle;
+  bare_exif_entry_t *loader;
+  err = js_create_arraybuffer(env, sizeof(bare_exif_entry_t), (void **) &loader, &handle);
+  assert(err == 0);
+  loader->handle = entry;
+
+  err = js_set_named_property(env, result, "handle", handle);
+  assert(err == 0);
+
+  int tag = entry->tag;
+  int format = entry->format;
+  unsigned long components = entry->components;
+  unsigned int size = entry->size;
+
+#define V(n) \
+  { \
+    js_value_t *val; \
+    err = js_create_int64(env, n, &val); \
+    assert(err == 0); \
+    err = js_set_named_property(env, result, #n, val); \
+    assert(err == 0); \
+  }
+
+  V(tag);
+  V(format);
+  V(components);
+  V(size);
+#undef V
+
+  js_value_t *buffer;
+  err = js_create_external_arraybuffer(env, entry->data, entry->size, NULL, NULL, &buffer);
+  assert(err == 0);
+
+  err = js_set_named_property(env, result, "data", buffer);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
+bare_exif_get_entry_value(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  bare_exif_entry_t *entry;
+  err = js_get_arraybuffer_info(env, argv[0], (void **) &entry, NULL);
+  assert(err == 0);
+
+  char buffer[1024];
+  exif_entry_get_value(entry->handle, buffer, sizeof(buffer));
+
+  js_value_t *result;
+  err = js_create_string_utf8(env, (utf8_t*)buffer, strlen(buffer), &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
 bare_exif_destroy_data(js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -61,6 +160,27 @@ bare_exif_destroy_data(js_env_t *env, js_callback_info_t *info) {
   assert(err == 0);
 
   exif_data_unref(data->handle);
+
+  return NULL;
+}
+
+static js_value_t *
+bare_exif_destroy_entry(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  bare_exif_entry_t *entry;
+  err = js_get_arraybuffer_info(env, argv[0], (void **) &entry, NULL);
+  assert(err == 0);
+
+  exif_entry_unref(entry->handle);
 
   return NULL;
 }
@@ -288,7 +408,10 @@ bare_exif_exports(js_env_t *env, js_value_t *exports) {
   }
 
   V("initData", bare_exif_init_data)
+  V("entry", bare_exif_get_entry)
+  V("entryValue", bare_exif_get_entry_value)
   V("destroyData", bare_exif_destroy_data)
+  V("destroyEntry", bare_exif_destroy_entry)
 #undef V
 
   return exports;
