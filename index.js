@@ -2,7 +2,13 @@ const binding = require('./binding')
 
 exports.constants = {
   tags: binding.tags,
-  ifds: binding.ifds
+  ifds: binding.ifds,
+  formats: binding.formats,
+  byteOrders: binding.byteOrders
+}
+
+exports.util = {
+  entryRaw: require('./util').entryRaw
 }
 
 class EXIFEntry {
@@ -11,8 +17,9 @@ class EXIFEntry {
     this.tag = data.tag
     this.format = data.format
     this.components = data.components
-    this.data = Buffer.from(data.data)
+    this.data = data.data
     this.size = data.size
+    this.byteOrder = data.byte_order
   }
 
   value() {

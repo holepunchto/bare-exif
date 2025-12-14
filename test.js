@@ -18,14 +18,16 @@ test('entry has raw data', (t) => {
 
   const data = new exif.Data(image)
   const entry = data.entry(exif.constants.tags.ORIENTATION)
+  const buffer = Buffer.from(entry.data)
 
   t.is(entry.tag, 274)
   t.is(entry.format, 3)
   t.is(entry.components, 1)
-  t.is(entry.data.length, 2)
-  t.is(entry.data[0], 0)
-  t.is(entry.data[1], 1)
   t.is(entry.size, 2)
+  t.is(entry.byteOrder, 0)
+  t.is(buffer.length, 2)
+  t.is(buffer[0], 0)
+  t.is(buffer[1], 1)
 })
 
 test('print all entries', (t) => {
@@ -39,6 +41,21 @@ test('print all entries', (t) => {
     const entry = data.entry(value)
     if (entry) {
       t.comment(`${key}: ${entry.value()}`)
+    }
+  }
+})
+
+test('print all entries raw', (t) => {
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  const data = new exif.Data(image)
+
+  for (let [key, value] of Object.entries(exif.constants.tags)) {
+    const entry = data.entry(value)
+    if (entry) {
+      t.comment(`${key}: ${exif.util.entryRaw(entry)}`)
     }
   }
 })
