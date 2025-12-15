@@ -7,10 +7,10 @@ function readComponent(entry, index) {
 
   switch (entry.format) {
     case formats.BYTE:
-      return view.getUint8(0)
+      return view.getUint8(index)
 
     case formats.SBYTE:
-      return view.getInt8(0)
+      return view.getInt8(index)
 
     case formats.SHORT:
       return view.getUint16(index * 2, littleEndian)
