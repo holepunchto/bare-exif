@@ -55,7 +55,7 @@ test('print all entries raw', (t) => {
   for (let [key, value] of Object.entries(exif.constants.tags)) {
     const entry = data.entry(value)
     if (entry) {
-      t.comment(`${key}: ${exif.util.entryRaw(entry)}`)
+      t.comment(`${key}: ${entry.read()}`)
     }
   }
 })
