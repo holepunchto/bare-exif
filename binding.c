@@ -91,6 +91,7 @@ bare_exif_get_entry(js_env_t *env, js_callback_info_t *info) {
   int format = entry->format;
   unsigned long components = entry->components;
   unsigned int size = entry->size;
+  ExifByteOrder byte_order = exif_data_get_byte_order(entry->parent->parent);
 
 #define V(n) \
   { \
@@ -105,6 +106,7 @@ bare_exif_get_entry(js_env_t *env, js_callback_info_t *info) {
   V(format);
   V(components);
   V(size);
+  V(byte_order);
 #undef V
 
   js_value_t *buffer;
@@ -396,6 +398,56 @@ bare_exif_exports(js_env_t *env, js_value_t *exports) {
   V(YCBCR_POSITIONING)
   V(YCBCR_SUB_SAMPLING)
   V(Y_RESOLUTION)
+#undef V
+
+  js_value_t *formats;
+  err = js_create_object(env, &formats);
+  assert(err == 0);
+
+  err = js_set_named_property(env, exports, "formats", formats);
+  assert(err == 0);
+
+#define V(format) \
+  { \
+    js_value_t *val; \
+    err = js_create_uint32(env, EXIF_FORMAT_##format, &val); \
+    assert(err == 0); \
+    err = js_set_named_property(env, formats, #format, val); \
+    assert(err == 0); \
+  }
+
+  V(BYTE)
+  V(ASCII)
+  V(SHORT)
+  V(LONG)
+  V(RATIONAL)
+  V(SBYTE)
+  V(UNDEFINED)
+  V(SSHORT)
+  V(SLONG)
+  V(SRATIONAL)
+  V(FLOAT)
+  V(DOUBLE)
+#undef V
+
+  js_value_t *byte_orders;
+  err = js_create_object(env, &byte_orders);
+  assert(err == 0);
+
+  err = js_set_named_property(env, exports, "byteOrders", byte_orders);
+  assert(err == 0);
+
+#define V(byte_order) \
+  { \
+    js_value_t *val; \
+    err = js_create_uint32(env, EXIF_BYTE_ORDER_##byte_order, &val); \
+    assert(err == 0); \
+    err = js_set_named_property(env, byte_orders, #byte_order, val); \
+    assert(err == 0); \
+  }
+
+  V(MOTOROLA)
+  V(INTEL)
 #undef V
 
 #define V(name, fn) \

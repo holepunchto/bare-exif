@@ -17,8 +17,8 @@ const data = new exif.Data(image)
 
 const orientation = data.entry(exif.constants.tags.ORIENTATION)
 
-console.log(orientation.value())
-// Top-left
+orientation.read() // 1 (raw value)
+orientation.value() // Top-left (human readable string)
 ```
 
 ## License
