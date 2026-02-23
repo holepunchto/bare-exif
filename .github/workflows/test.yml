@@ -34,7 +34,8 @@ jobs:
         if: ${{ matrix.platform == 'mingw' }}
       - run: npm install -g bare-runtime bare-make
       - run: npm install
-      - run: bare-make generate --platform ${{ matrix.platform }} --arch ${{ matrix.arch }} --debug
+      - run: bare-make generate --platform ${{ matrix.platform }} --arch ${{ matrix.arch }} --debug ${{ matrix.flags }}
       - run: bare-make build
       - run: bare-make install
       - run: npm test
+        if: ${{ matrix.platform == 'darin' || matrix.platform == 'linux' }}
