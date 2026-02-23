@@ -43,12 +43,10 @@ jobs:
             arch: x64
             tags: -simulator
             flags: --simulator
-          # - os: windows-2022
-          #   platform: win32
-          #   arch: x64
-          # - os: windows-2022
-          #   platform: win32
-          #   arch: arm64
+          - os: ubuntu-22.04
+            platform: mingw
+            arch: x64
+            flags: --no-color
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.tags }}
     steps:
@@ -56,13 +54,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - run: choco install msys2
-        if: ${{ matrix.platform == 'win32' }}
-      - run: pacman --noconfirm -S make
-        shell: C:\tools\msys64\usr\bin\bash.exe -e {0}
-        env:
-          PATH: C:\tools\msys64\usr\bin
-        if: ${{ matrix.platform == 'win32' }}
+      - run: |
+          sudo apt update
+          sudo apt install mingw-w64
+        if: ${{ matrix.platform == 'mingw' }}
       - run: npm install -g bare-runtime bare-make
       - run: npm install
       - run: bare-make generate --platform ${{ matrix.platform }} --arch ${{ matrix.arch }} ${{ matrix.flags }}
