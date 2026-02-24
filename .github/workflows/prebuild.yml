@@ -57,9 +57,9 @@ jobs:
         with:
           node-version: lts/*
       - run: sudo apt install autoconf automake autopoint libtool
-        if: ${{ matrix.platform == 'linux' }}
+        if: ${{ matrix.platform == 'linux' || matrix.platform == 'android' }}
       - run: brew install autoconf automake libtool
-        if: ${{ matrix.platform == 'darwin' }}
+        if: ${{ matrix.platform == 'darwin' || matrix.platform == 'ios' }}
       - run: choco install msys2
         if: ${{ matrix.platform == 'win32' }}
       - run: pacman --noconfirm -S make autoconf automake libtool gettext gettext-devel
