@@ -86,12 +86,14 @@ if(CMAKE_C_COMPILER)
 endif()
 
 declare_port(
-  "https://github.com/libexif/libexif/releases/download/v0.6.25/libexif-0.6.25.tar.gz"
+  "github:libexif/libexif@0.6.25"
   exif
   AUTOTOOLS
   BYPRODUCTS lib/${lib}
   ARGS ${args}
   ENV ${env}
+  PATCHES
+    patches/01-intptr.patch
 )
 
 add_library(exif STATIC IMPORTED GLOBAL)

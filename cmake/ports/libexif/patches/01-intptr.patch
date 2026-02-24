@@ -1,0 +1,13 @@
+diff --git a/libexif/exif-loader.c b/libexif/exif-loader.c
+index 073f79f..2eeecd7 100644
+--- a/libexif/exif-loader.c
++++ b/libexif/exif-loader.c
+@@ -308,7 +308,7 @@ begin:
+ 		default:
+ 			switch (eld->b[i]) {
+ 			case JPEG_MARKER_APP1:
+-			  if (!memcmp (eld->b + i + 3, ExifHeader, MIN((ssize_t)(sizeof(ExifHeader)), MAX(0, ((ssize_t)(sizeof(eld->b))) - ((ssize_t)i) - 3)))) {
++			  if (!memcmp (eld->b + i + 3, ExifHeader, MIN((intptr_t)(sizeof(ExifHeader)), MAX(0, ((intptr_t)(sizeof(eld->b))) - ((intptr_t)i) - 3)))) {
+ 					eld->data_format = EL_DATA_FORMAT_EXIF;
+ 				} else {
+ 					eld->data_format = EL_DATA_FORMAT_JPEG; /* Probably JFIF - keep searching for APP1 EXIF*/
