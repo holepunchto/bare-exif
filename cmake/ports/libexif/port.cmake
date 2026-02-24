@@ -7,7 +7,7 @@ else()
 endif()
 
 set(env)
-
+set(path)
 set(args
   --disable-shared
   --disable-docs
@@ -82,8 +82,44 @@ if(CMAKE_C_COMPILER)
     list(APPEND env "LDFLAGS=--target=${CMAKE_C_COMPILER_TARGET}")
   endif()
 
-  list(APPEND env --modify "PATH=path_list_prepend:${CC_path}")
+  list(APPEND path "${CC_path}")
 endif()
+
+if(CMAKE_AR)
+  cmake_path(GET CMAKE_AR PARENT_PATH AR_path)
+  cmake_path(GET CMAKE_AR FILENAME AR_filename)
+
+  if(WIN32 AND AR_filename MATCHES "llvm-lib.exe")
+    set(AR_filename "llvm-ar.exe")
+  endif()
+
+  list(APPEND env "AR=${AR_filename}")
+  list(APPEND path "${AR_path}")
+endif()
+
+if(CMAKE_RANLIB)
+  cmake_path(GET CMAKE_RANLIB PARENT_PATH RANLIB_path)
+  cmake_path(GET CMAKE_RANLIB FILENAME RANLIB_filename)
+
+  list(APPEND env "RANLIB=${RANLIB_filename}")
+  list(APPEND path "${RANLIB_path}")
+endif()
+
+foreach(part "$ENV{PATH}")
+  cmake_path(NORMAL_PATH part)
+
+  list(APPEND path "${part}")
+endforeach()
+
+list(REMOVE_DUPLICATES path)
+
+if(CMAKE_HOST_WIN32)
+  list(TRANSFORM path REPLACE "([A-Z]):" "/\\1")
+endif()
+
+list(JOIN path ":" path)
+
+list(APPEND env "PATH=${path}")
 
 declare_port(
   "github:libexif/libexif@0.6.25"
