@@ -61,6 +61,8 @@ endif()
 
 list(APPEND args --host=${arch}-${platform})
 
+message(FATAL_ERROR "${args}")
+
 if(APPLE)
   list(APPEND args --with-sysroot=${CMAKE_OSX_SYSROOT})
 elseif(ANDROID)
