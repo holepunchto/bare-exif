@@ -27,6 +27,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+      - run: sudo apt install gettext
+        if: ${{ matrix.platform == 'linux' }}
       - run: choco install msys2
         if: ${{ matrix.platform == 'win32' }}
       - run: pacman --noconfirm -S make
