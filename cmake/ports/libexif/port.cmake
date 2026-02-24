@@ -113,6 +113,10 @@ endforeach()
 
 list(REMOVE_DUPLICATES path)
 
+if(CMAKE_HOST_WIN32)
+  list(TRANSFORM path REPLACE "([A-Z]):" "/\\1")
+endif()
+
 list(JOIN path ":" path)
 
 list(APPEND env "PATH=${path}")
