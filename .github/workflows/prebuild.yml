@@ -46,7 +46,7 @@ jobs:
           # - os: windows-2022
           #   platform: win32
           #   arch: x64
-          - os: windows-11-arm
+          - os: windows-2022
             platform: win32
             arch: arm64
     runs-on: ${{ matrix.os }}
@@ -61,6 +61,8 @@ jobs:
       - run: brew install autoconf automake libtool
         if: ${{ matrix.platform == 'darwin' || matrix.platform == 'ios' }}
       - run: choco install msys2
+        if: ${{ matrix.platform == 'win32' }}
+      - run: choco upgrade llvm
         if: ${{ matrix.platform == 'win32' }}
       - run: pacman --noconfirm -S make autoconf automake libtool gettext gettext-devel
         shell: C:\tools\msys64\usr\bin\bash.exe -e {0}
