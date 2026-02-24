@@ -101,8 +101,8 @@ if(CMAKE_RANLIB)
   cmake_path(GET CMAKE_RANLIB PARENT_PATH RANLIB_path)
   cmake_path(GET CMAKE_RANLIB FILENAME RANLIB_filename)
 
-  list(APPEND path "${RANLIB_path}")
   list(APPEND env "RANLIB=${RANLIB_filename}")
+  list(APPEND path "${RANLIB_path}")
 endif()
 
 foreach(part "$ENV{PATH}")
