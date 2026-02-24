@@ -29,6 +29,8 @@ jobs:
           node-version: lts/*
       - run: sudo apt install gettext autoconf automake libtool
         if: ${{ matrix.platform == 'linux' }}
+      - run: brew install autoconf automake libtool
+        if: ${{ matrix.platform == 'darwin' }}
       - run: choco install msys2
         if: ${{ matrix.platform == 'win32' }}
       - run: pacman --noconfirm -S make
