@@ -47,6 +47,40 @@ test('entry.read()', (t) => {
   t.alike(data.entry(tags.Y_RESOLUTION).read(), { numerator: 72, denominator: 1 }, 'Y_RESOLUTION')
 })
 
+test('data.remove()', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  const data = new exif.Data(image)
+
+  t.ok(data.entry(tags.ORIENTATION))
+  t.is(data.entry(tags.ORIENTATION).read(), 1)
+
+  data.remove(tags.ORIENTATION)
+
+  t.is(data.entry(tags.ORIENTATION), null)
+})
+
+test('data.save() - save data into raw exif', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  const data = new exif.Data(image)
+
+  data.remove(tags.ORIENTATION)
+
+  const saved = data.save()
+  const roundtrip = new exif.Data(saved)
+
+  t.ok(saved instanceof Uint8Array)
+  t.absent(roundtrip.entry(tags.ORIENTATION))
+  t.is(roundtrip.entry(tags.COLOR_SPACE).read(), 1)
+})
+
 test('print all entries with entry.read()', (t) => {
   const image = require('./test/fixtures/grapefruit.jpg', {
     with: { type: 'binary' }
