@@ -124,7 +124,7 @@ exports.Data = class EXIFData {
     return new EXIFEntry(data)
   }
 
-  remove(tag) {
+  removeEntry(tag) {
     return binding.removeEntry(this._handle, tag)
   }
 

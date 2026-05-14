@@ -47,7 +47,7 @@ test('entry.read()', (t) => {
   t.alike(data.entry(tags.Y_RESOLUTION).read(), { numerator: 72, denominator: 1 }, 'Y_RESOLUTION')
 })
 
-test('data.remove()', (t) => {
+test('data.removeEntry()', (t) => {
   const { tags } = exif.constants
   const image = require('./test/fixtures/grapefruit.jpg', {
     with: { type: 'binary' }
@@ -58,7 +58,7 @@ test('data.remove()', (t) => {
   t.ok(data.entry(tags.ORIENTATION))
   t.is(data.entry(tags.ORIENTATION).read(), 1)
 
-  data.remove(tags.ORIENTATION)
+  data.removeEntry(tags.ORIENTATION)
 
   t.is(data.entry(tags.ORIENTATION), null)
 })
@@ -71,7 +71,7 @@ test('data.save() - save data into raw exif', (t) => {
 
   const data = new exif.Data(image)
 
-  data.remove(tags.ORIENTATION)
+  data.removeEntry(tags.ORIENTATION)
 
   const saved = data.save()
   const roundtrip = new exif.Data(saved)
