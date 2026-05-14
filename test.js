@@ -63,6 +63,19 @@ test('data.removeEntry()', (t) => {
   t.is(data.entry(tags.ORIENTATION), null)
 })
 
+test('data.removeEntry() does not throw when the tag is absent', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  const data = new exif.Data(image)
+
+  t.absent(data.entry(tags.MAKE))
+
+  data.removeEntry(tags.MAKE)
+})
+
 test('data.save() - save data into raw exif', (t) => {
   const { tags } = exif.constants
   const image = require('./test/fixtures/grapefruit.jpg', {
