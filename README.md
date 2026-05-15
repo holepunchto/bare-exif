@@ -21,10 +21,10 @@ orientation.read() // 1 (raw value)
 orientation.value() // Top-left (human readable string)
 
 // Remove a tag
-data.remove(exif.constants.tags.ORIENTATION)
+data.removeEntry(exif.constants.tags.ORIENTATION)
 
 // Serialize into raw EXIF
-const exifBytes = data.save()
+const exifBytes = data.saveData()
 // <Uint8Array>
 ```
 
