@@ -128,7 +128,7 @@ exports.Data = class EXIFData {
     return binding.removeEntry(this._handle, tag)
   }
 
-  save() {
+  saveData() {
     return new Uint8Array(binding.saveData(this._handle))
   }
 

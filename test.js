@@ -76,7 +76,7 @@ test('data.removeEntry() does not throw when the tag is absent', (t) => {
   data.removeEntry(tags.MAKE)
 })
 
-test('data.save() - save data into raw exif', (t) => {
+test('data.saveData() - save data into raw exif', (t) => {
   const { tags } = exif.constants
   const image = require('./test/fixtures/grapefruit.jpg', {
     with: { type: 'binary' }
@@ -86,7 +86,7 @@ test('data.save() - save data into raw exif', (t) => {
 
   data.removeEntry(tags.ORIENTATION)
 
-  const saved = data.save()
+  const saved = data.saveData()
   const roundtrip = new exif.Data(saved)
 
   t.ok(saved instanceof Uint8Array)
