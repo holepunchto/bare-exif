@@ -124,6 +124,14 @@ exports.Data = class EXIFData {
     return new EXIFEntry(data)
   }
 
+  removeEntry(tag) {
+    return binding.removeEntry(this._handle, tag)
+  }
+
+  saveData() {
+    return new Uint8Array(binding.saveData(this._handle))
+  }
+
   destroy() {
     if (this._handle === null) return
     binding.destroyData(this._handle)

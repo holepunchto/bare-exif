@@ -3,6 +3,8 @@
 #include <js.h>
 #include <libexif/exif-data.h>
 #include <libexif/exif-tag.h>
+#include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
 
 typedef struct {
@@ -141,6 +143,68 @@ bare_exif_get_entry_value(js_env_t *env, js_callback_info_t *info) {
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t*)buffer, strlen(buffer), &result);
   assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
+bare_exif_remove_entry(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 2);
+
+  bare_exif_data_t *data;
+  err = js_get_arraybuffer_info(env, argv[0], (void **) &data, NULL);
+  assert(err == 0);
+
+  int64_t exif_tag;
+  err = js_get_value_int64(env, argv[1], &exif_tag);
+  assert(err == 0);
+
+  ExifEntry *entry = exif_data_get_entry(data->handle, (ExifTag)exif_tag);
+
+  if (entry != NULL) {
+    exif_content_remove_entry(entry->parent, entry);
+  }
+
+  return NULL;
+}
+
+static js_value_t *
+bare_exif_save_data(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  bare_exif_data_t *data;
+  err = js_get_arraybuffer_info(env, argv[0], (void **) &data, NULL);
+  assert(err == 0);
+
+  unsigned char *bytes = NULL;
+  unsigned int len = 0;
+  exif_data_save_data(data->handle, &bytes, &len);
+
+  js_value_t *result;
+  void *output;
+  err = js_create_arraybuffer(env, len, &output, &result);
+  assert(err == 0);
+
+  if (len > 0) {
+    memcpy(output, bytes, len);
+    free(bytes);
+  }
 
   return result;
 }
@@ -462,6 +526,8 @@ bare_exif_exports(js_env_t *env, js_value_t *exports) {
   V("initData", bare_exif_init_data)
   V("entry", bare_exif_get_entry)
   V("entryValue", bare_exif_get_entry_value)
+  V("removeEntry", bare_exif_remove_entry)
+  V("saveData", bare_exif_save_data)
   V("destroyData", bare_exif_destroy_data)
   V("destroyEntry", bare_exif_destroy_entry)
 #undef V
