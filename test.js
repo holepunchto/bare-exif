@@ -6,7 +6,7 @@ test('load .jpg', (t) => {
     with: { type: 'binary' }
   })
 
-  const data = new exif.Data(image)
+  using data = new exif.Data(image)
 
   t.comment(data)
 })
@@ -16,7 +16,7 @@ test('entry has raw data', (t) => {
     with: { type: 'binary' }
   })
 
-  const data = new exif.Data(image)
+  using data = new exif.Data(image)
   const entry = data.entry(exif.constants.tags.ORIENTATION)
   const buffer = Buffer.from(entry.data)
 
@@ -36,7 +36,7 @@ test('entry.read()', (t) => {
     with: { type: 'binary' }
   })
 
-  const data = new exif.Data(image)
+  using data = new exif.Data(image)
 
   t.is(data.entry(tags.COLOR_SPACE).read(), 1, 'COLOR_SPACE')
   t.is(data.entry(tags.ORIENTATION).read(), 1, 'ORIENTATION')
@@ -53,7 +53,7 @@ test('data.removeEntry()', (t) => {
     with: { type: 'binary' }
   })
 
-  const data = new exif.Data(image)
+  using data = new exif.Data(image)
 
   t.ok(data.entry(tags.ORIENTATION))
   t.is(data.entry(tags.ORIENTATION).read(), 1)
@@ -69,7 +69,7 @@ test('data.removeEntry() does not throw when the tag is absent', (t) => {
     with: { type: 'binary' }
   })
 
-  const data = new exif.Data(image)
+  using data = new exif.Data(image)
 
   t.absent(data.entry(tags.MAKE))
 
@@ -82,12 +82,12 @@ test('data.saveData() - save data into raw exif', (t) => {
     with: { type: 'binary' }
   })
 
-  const data = new exif.Data(image)
+  using data = new exif.Data(image)
 
   data.removeEntry(tags.ORIENTATION)
 
   const saved = data.saveData()
-  const roundtrip = new exif.Data(saved)
+  using roundtrip = new exif.Data(saved)
 
   t.ok(saved instanceof Uint8Array)
   t.absent(roundtrip.entry(tags.ORIENTATION))
@@ -99,7 +99,7 @@ test('print all entries with entry.read()', (t) => {
     with: { type: 'binary' }
   })
 
-  const data = new exif.Data(image)
+  using data = new exif.Data(image)
 
   for (let [key, value] of Object.entries(exif.constants.tags)) {
     const entry = data.entry(value)
@@ -114,7 +114,7 @@ test('print all entries with entry.value()', (t) => {
     with: { type: 'binary' }
   })
 
-  const data = new exif.Data(image)
+  using data = new exif.Data(image)
 
   for (let [key, value] of Object.entries(exif.constants.tags)) {
     const entry = data.entry(value)
