@@ -133,7 +133,6 @@ test('entry.destroy() leaves the rest of the data tree usable', (t) => {
 
   data.entry(exif.constants.tags.ORIENTATION).destroy()
 
-  // A different, non-destroyed entry must still decode correctly.
   t.is(data.entry(exif.constants.tags.COLOR_SPACE).read(), 1)
 })
 
