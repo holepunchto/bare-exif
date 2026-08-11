@@ -103,8 +103,8 @@ class EXIFEntry {
   }
 
   destroy() {
-    if (this._handle === null) return
-    binding.destroyEntry(this._handle)
+    // The entry is owned by the EXIFData tree, which frees it on destroy().
+    // This just drops our borrowed handle — freeing it here would double-free.
     this._handle = null
   }
 

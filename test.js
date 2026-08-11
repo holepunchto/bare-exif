@@ -157,3 +157,16 @@ test('constructing from non-EXIF data does not crash', (t) => {
 
   t.is(data.entry(exif.constants.tags.ORIENTATION), null)
 })
+
+test('data.destroy() cleans up and is safe to call twice', (t) => {
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  const data = new exif.Data(image)
+
+  data.destroy()
+  data.destroy() // second call must be a no-op, not a double-free
+
+  t.pass('data destroyed without crashing')
+})
