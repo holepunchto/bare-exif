@@ -165,7 +165,7 @@ test('data.destroy() cleans up and is safe to call twice', (t) => {
   const data = new exif.Data(image)
 
   data.destroy()
-  data.destroy() // second call must be a no-op, not a double-free
+  data.destroy()
 
   t.pass('data destroyed without crashing')
 })
