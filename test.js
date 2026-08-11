@@ -123,3 +123,37 @@ test('print all entries with entry.value()', (t) => {
     }
   }
 })
+
+test('entry.destroy() leaves the rest of the data tree usable', (t) => {
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  using data = new exif.Data(image)
+
+  data.entry(exif.constants.tags.ORIENTATION).destroy()
+
+  // A different, non-destroyed entry must still decode correctly.
+  t.is(data.entry(exif.constants.tags.COLOR_SPACE).read(), 1)
+})
+
+test('entry disposes via using', (t) => {
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  using data = new exif.Data(image)
+
+  {
+    using entry = data.entry(exif.constants.tags.ORIENTATION)
+    t.is(entry.read(), 1)
+  }
+
+  t.pass('entry disposed without crashing')
+})
+
+test('constructing from non-EXIF data does not crash', (t) => {
+  using data = new exif.Data(Buffer.from('this is not a jpeg'))
+
+  t.is(data.entry(exif.constants.tags.ORIENTATION), null)
+})
