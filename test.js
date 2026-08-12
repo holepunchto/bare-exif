@@ -137,24 +137,63 @@ test('entry.destroy() leaves the rest of the data tree usable', (t) => {
 })
 
 test('entry disposes via using', (t) => {
+  const { tags } = exif.constants
   const image = require('./test/fixtures/grapefruit.jpg', {
     with: { type: 'binary' }
   })
 
   using data = new exif.Data(image)
 
+  let entry
+
   {
-    using entry = data.entry(exif.constants.tags.ORIENTATION)
+    using scoped = data.entry(tags.ORIENTATION)
+    entry = scoped
+
     t.is(entry.read(), 1)
   }
 
-  t.pass('entry disposed without crashing')
+  t.exception(() => entry.read(), /EXIF entry has been destroyed/)
+})
+
+test('data disposes via using', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  let data
+
+  {
+    using scoped = new exif.Data(image)
+    data = scoped
+
+    t.is(data.entry(tags.ORIENTATION).read(), 1)
+  }
+
+  t.exception(() => data.entry(tags.ORIENTATION), /EXIF data has been destroyed/)
 })
 
 test('constructing from non-EXIF data does not crash', (t) => {
   using data = new exif.Data(Buffer.from('this is not a jpeg'))
 
   t.is(data.entry(exif.constants.tags.ORIENTATION), null)
+})
+
+test('constructing from a slice outside its buffer throws', (t) => {
+  const buffer = new ArrayBuffer(8)
+
+  // `.all` because the binding throws a RangeError, which plain `t.exception`
+  // rethrows instead of catching.
+  t.exception.all(
+    () => new exif.Data({ buffer, byteOffset: 4, byteLength: 8 }),
+    /Buffer out of range/
+  )
+
+  t.exception.all(
+    () => new exif.Data({ buffer, byteOffset: -1, byteLength: 4 }),
+    /Buffer out of range/
+  )
 })
 
 test('entry.destroy() invalidates the entry', (t) => {
