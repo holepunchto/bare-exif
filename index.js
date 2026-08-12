@@ -8,14 +8,19 @@ exports.constants = {
 }
 
 class EXIFEntry {
+  // An entry borrows from the data tree it was read from. Holding on to the
+  // parent keeps it reachable, so an entry can never be collected after the
+  // tree it points into.
   constructor(data) {
-    this._handle = data.handle
-    this.tag = data.tag
-    this.format = data.format
-    this.components = data.components
-    this.data = data.data
-    this.size = data.size
-    this.byteOrder = data.byte_order
+    this._data = data
+    this._destroyed = false
+
+    this.tag = 0
+    this.format = 0
+    this.components = 0
+    this.size = 0
+    this.byteOrder = 0
+    this.data = null
   }
 
   #readComponent(index) {
@@ -81,6 +86,10 @@ class EXIFEntry {
   }
 
   read() {
+    if (this._destroyed) {
+      throw new Error('EXIF entry has been destroyed')
+    }
+
     if (!this.components || this.components < 0) return null
 
     if (
@@ -99,13 +108,18 @@ class EXIFEntry {
   }
 
   value() {
-    return binding.entryValue(this._handle)
+    return binding.entryValue(this)
   }
 
   destroy() {
-    if (this._handle === null) return
-    binding.destroyEntry(this._handle)
-    this._handle = null
+    if (this._destroyed) return
+
+    this._data._entries.delete(this)
+
+    binding.destroyEntry(this, this.data)
+
+    this.data = null
+    this._destroyed = true
   }
 
   [Symbol.dispose]() {
@@ -115,27 +129,45 @@ class EXIFEntry {
 
 exports.Data = class EXIFData {
   constructor(data) {
-    this._handle = binding.initData(data.buffer, data.byteOffset, data.byteLength)
+    this._destroyed = false
+
+    // The entries handed out so far. They borrow from the tree below, so they
+    // are destroyed before it is.
+    this._entries = new Set()
+
+    binding.initData(this, data.buffer, data.byteOffset, data.byteLength)
   }
 
   entry(tag) {
-    const data = binding.entry(this._handle, tag)
-    if (!data) return null
-    return new EXIFEntry(data)
+    const entry = new EXIFEntry(this)
+
+    if (binding.initEntry(entry, this, tag) === undefined) return null
+
+    this._entries.add(entry)
+
+    return entry
   }
 
   removeEntry(tag) {
-    return binding.removeEntry(this._handle, tag)
+    for (const entry of this._entries) {
+      if (entry.tag === tag) entry.destroy()
+    }
+
+    binding.removeEntry(this, tag)
   }
 
   saveData() {
-    return new Uint8Array(binding.saveData(this._handle))
+    return new Uint8Array(binding.saveData(this))
   }
 
   destroy() {
-    if (this._handle === null) return
-    binding.destroyData(this._handle)
-    this._handle = null
+    if (this._destroyed) return
+
+    for (const entry of [...this._entries]) entry.destroy()
+
+    binding.destroyData(this)
+
+    this._destroyed = true
   }
 
   [Symbol.dispose]() {

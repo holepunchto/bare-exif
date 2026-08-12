@@ -123,3 +123,194 @@ test('print all entries with entry.value()', (t) => {
     }
   }
 })
+
+test('entry.destroy() leaves the rest of the data tree usable', (t) => {
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  using data = new exif.Data(image)
+
+  data.entry(exif.constants.tags.ORIENTATION).destroy()
+
+  t.is(data.entry(exif.constants.tags.COLOR_SPACE).read(), 1)
+})
+
+test('entry disposes via using', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  using data = new exif.Data(image)
+
+  let entry
+
+  {
+    using scoped = data.entry(tags.ORIENTATION)
+    entry = scoped
+
+    t.is(entry.read(), 1)
+  }
+
+  t.exception(() => entry.read(), /EXIF entry has been destroyed/)
+})
+
+test('data disposes via using', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  let data
+
+  {
+    using scoped = new exif.Data(image)
+    data = scoped
+
+    t.is(data.entry(tags.ORIENTATION).read(), 1)
+  }
+
+  t.exception(() => data.entry(tags.ORIENTATION), /EXIF data has been destroyed/)
+})
+
+test('constructing from non-EXIF data does not crash', (t) => {
+  using data = new exif.Data(Buffer.from('this is not a jpeg'))
+
+  t.is(data.entry(exif.constants.tags.ORIENTATION), null)
+})
+
+test('constructing from a slice outside its buffer throws', (t) => {
+  const buffer = new ArrayBuffer(8)
+
+  // `.all` because the binding throws a RangeError, which plain `t.exception`
+  // rethrows instead of catching.
+  t.exception.all(
+    () => new exif.Data({ buffer, byteOffset: 4, byteLength: 8 }),
+    /Buffer out of range/
+  )
+
+  t.exception.all(
+    () => new exif.Data({ buffer, byteOffset: -1, byteLength: 4 }),
+    /Buffer out of range/
+  )
+})
+
+test('entry.destroy() invalidates the entry', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  using data = new exif.Data(image)
+  const entry = data.entry(tags.ORIENTATION)
+
+  entry.destroy()
+
+  t.exception(() => entry.read(), /EXIF entry has been destroyed/)
+  t.exception(() => entry.value(), /EXIF entry has been destroyed/)
+})
+
+test('entry.destroy() is idempotent', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  using data = new exif.Data(image)
+  const entry = data.entry(tags.ORIENTATION)
+
+  entry.destroy()
+  entry.destroy()
+
+  t.exception(() => entry.read(), /EXIF entry has been destroyed/)
+})
+
+test('data.destroy() destroys the entries it handed out', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  const data = new exif.Data(image)
+  const entry = data.entry(tags.ORIENTATION)
+
+  data.destroy()
+
+  t.exception(() => entry.read(), /EXIF entry has been destroyed/)
+  t.exception(() => entry.value(), /EXIF entry has been destroyed/)
+})
+
+test('destroying detaches the buffer borrowed from the tree', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  const data = new exif.Data(image)
+  const buffer = data.entry(tags.ORIENTATION).data
+
+  t.is(buffer.byteLength, 2)
+
+  data.destroy()
+
+  t.is(buffer.byteLength, 0, 'the stray reference no longer reaches freed memory')
+  t.exception.all(() => new Uint8Array(buffer)[0], /detached/)
+})
+
+test('data.removeEntry() destroys the entries it hands out for that tag', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  using data = new exif.Data(image)
+  const orientation = data.entry(tags.ORIENTATION)
+  const colorSpace = data.entry(tags.COLOR_SPACE)
+
+  data.removeEntry(tags.ORIENTATION)
+
+  t.exception(() => orientation.read(), /EXIF entry has been destroyed/)
+  t.is(colorSpace.read(), 1, 'the other entries are untouched')
+  t.is(data.entry(tags.ORIENTATION), null)
+})
+
+test('data.destroy() cleans up and is safe to call twice', (t) => {
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  const data = new exif.Data(image)
+
+  data.destroy()
+  data.destroy()
+
+  t.exception(() => data.saveData(), /EXIF data has been destroyed/)
+})
+
+test('data that is never destroyed is left to the finalizer', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  const data = new exif.Data(image)
+
+  // No destroy() on purpose: the tree must be freed when `data` is collected.
+  t.is(data.entry(tags.ORIENTATION).read(), 1)
+})
+
+test('using a destroyed data throws', (t) => {
+  const { tags } = exif.constants
+  const image = require('./test/fixtures/grapefruit.jpg', {
+    with: { type: 'binary' }
+  })
+
+  const data = new exif.Data(image)
+
+  data.destroy()
+
+  t.exception(() => data.entry(tags.ORIENTATION), /EXIF data has been destroyed/)
+  t.exception(() => data.removeEntry(tags.ORIENTATION), /EXIF data has been destroyed/)
+  t.exception(() => data.saveData(), /EXIF data has been destroyed/)
+})
