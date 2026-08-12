@@ -168,7 +168,6 @@ test('entry.destroy() invalidates the entry', (t) => {
 
   entry.destroy()
 
-  t.is(entry.destroyed, true)
   t.exception(() => entry.read(), /EXIF entry has been destroyed/)
   t.exception(() => entry.value(), /EXIF entry has been destroyed/)
 })
@@ -185,7 +184,7 @@ test('entry.destroy() is idempotent', (t) => {
   entry.destroy()
   entry.destroy()
 
-  t.is(entry.destroyed, true)
+  t.exception(() => entry.read(), /EXIF entry has been destroyed/)
 })
 
 test('data.destroy() destroys the entries it handed out', (t) => {
@@ -199,7 +198,6 @@ test('data.destroy() destroys the entries it handed out', (t) => {
 
   data.destroy()
 
-  t.is(entry.destroyed, true, 'the child went down with the parent')
   t.exception(() => entry.read(), /EXIF entry has been destroyed/)
   t.exception(() => entry.value(), /EXIF entry has been destroyed/)
 })
@@ -233,9 +231,8 @@ test('data.removeEntry() destroys the entries it hands out for that tag', (t) =>
 
   data.removeEntry(tags.ORIENTATION)
 
-  t.is(orientation.destroyed, true, 'the removed entry is invalidated')
-  t.is(colorSpace.destroyed, false, 'the other entries are untouched')
-  t.is(colorSpace.read(), 1)
+  t.exception(() => orientation.read(), /EXIF entry has been destroyed/)
+  t.is(colorSpace.read(), 1, 'the other entries are untouched')
   t.is(data.entry(tags.ORIENTATION), null)
 })
 
@@ -249,7 +246,7 @@ test('data.destroy() cleans up and is safe to call twice', (t) => {
   data.destroy()
   data.destroy()
 
-  t.is(data.destroyed, true)
+  t.exception(() => data.saveData(), /EXIF data has been destroyed/)
 })
 
 test('data that is never destroyed is left to the finalizer', (t) => {
@@ -260,10 +257,8 @@ test('data that is never destroyed is left to the finalizer', (t) => {
 
   const data = new exif.Data(image)
 
-  t.is(data.entry(tags.ORIENTATION).read(), 1)
-
   // No destroy() on purpose: the tree must be freed when `data` is collected.
-  t.is(data.destroyed, false)
+  t.is(data.entry(tags.ORIENTATION).read(), 1)
 })
 
 test('using a destroyed data throws', (t) => {

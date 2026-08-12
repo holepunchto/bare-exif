@@ -48,10 +48,6 @@ using data = new exif.Data(image)
 // data.destroy() runs for you at the end of the scope
 ```
 
-### `data.destroyed`
-
-Whether `data` has been destroyed. Using a destroyed `data` throws.
-
 ### `const entry = data.entry(tag)`
 
 Return the entry for `tag`, or `null` if absent. The entry borrows from `data` and may
@@ -62,11 +58,6 @@ not outlive it: `entry.data` is a view into the tree, not a copy.
 Release the entry's view of the tree and detach `entry.data`. Safe to call more than
 once. The entry itself is owned by `data`, so this frees nothing — to remove a tag
 from the tree, use `data.removeEntry(tag)`.
-
-### `entry.destroyed`
-
-Whether the entry has been destroyed, either directly or by its `data`. Using a
-destroyed entry throws.
 
 ### `data.removeEntry(tag)`
 

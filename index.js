@@ -23,10 +23,6 @@ class EXIFEntry {
     this.data = null
   }
 
-  get destroyed() {
-    return this._destroyed
-  }
-
   #readComponent(index) {
     const { formats, byteOrders } = binding
     const littleEndian = this.byteOrder === byteOrders.INTEL
@@ -140,10 +136,6 @@ exports.Data = class EXIFData {
     this._entries = new Set()
 
     binding.initData(this, data.buffer, data.byteOffset, data.byteLength)
-  }
-
-  get destroyed() {
-    return this._destroyed
   }
 
   entry(tag) {
