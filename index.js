@@ -161,7 +161,7 @@ exports.Data = class EXIFData {
       if (entry.tag === tag) entry.destroy()
     }
 
-    return binding.removeEntry(this, tag)
+    binding.removeEntry(this, tag)
   }
 
   saveData() {
