@@ -26,8 +26,8 @@ bare_exif_finalize_data(js_env_t *env, void *data, void *hint) {
 
 static void
 bare_exif_finalize_entry(js_env_t *env, void *data, void *hint) {
-  // An entry is owned by the data tree it was read from, so only the wrapper
-  // is ours to free.
+  // exif_data_get_entry() lends the pointer; the ExifContent holds the only
+  // reference. Unref'ing here would free an entry the tree still points at.
   free(data);
 }
 
