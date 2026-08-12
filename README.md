@@ -35,32 +35,42 @@ data.destroy()
 
 ### `const data = new exif.Data(buffer)`
 
-Parse EXIF data from a buffer. `data` owns the whole EXIF tree, including every entry
-returned by `data.entry()`.
+Parse EXIF data from a buffer. `data` owns the EXIF tree.
 
 ### `data.destroy()`
 
-Free the data and every entry it owns. Safe to call more than once. Prefer `using` to
-call it automatically when `data` goes out of scope:
+Destroy every entry handed out by `data`, then free the EXIF tree. Safe to call more
+than once. If you never call it, a finalizer does it when `data` is garbage collected.
+Prefer `using` to call it automatically when `data` goes out of scope:
 
 ```js
 using data = new exif.Data(image)
 // data.destroy() runs for you at the end of the scope
 ```
 
+### `data.destroyed`
+
+Whether `data` has been destroyed. Using a destroyed `data` throws.
+
 ### `const entry = data.entry(tag)`
 
-Return the entry for `tag`, or `null` if absent. The entry is a **borrowed view** into
-`data` — it stays valid until `data` is destroyed, and is freed together with it.
+Return the entry for `tag`, or `null` if absent. The entry borrows from `data` and may
+not outlive it: `entry.data` is a view into the tree, not a copy.
 
 ### `entry.destroy()`
 
-Drop your handle to the entry. It does **not** free anything — the entry is owned by
-`data`. To actually remove a tag from the tree, use `data.removeEntry(tag)`.
+Release the entry's view of the tree and detach `entry.data`. Safe to call more than
+once. The entry itself is owned by `data`, so this frees nothing — to remove a tag
+from the tree, use `data.removeEntry(tag)`.
+
+### `entry.destroyed`
+
+Whether the entry has been destroyed, either directly or by its `data`. Using a
+destroyed entry throws.
 
 ### `data.removeEntry(tag)`
 
-Remove `tag` from the EXIF tree and free its entry.
+Destroy any live entry for `tag`, then remove it from the EXIF tree and free it.
 
 ### `data.saveData()`
 
