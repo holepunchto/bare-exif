@@ -71,15 +71,23 @@ if(CMAKE_C_COMPILER)
   cmake_path(GET CMAKE_C_COMPILER PARENT_PATH CC_path)
   cmake_path(GET CMAKE_C_COMPILER FILENAME CC_filename)
 
+  set(flags "--target=${CMAKE_C_COMPILER_TARGET}")
+
+  if(APPLE)
+    string(APPEND flags " -isysroot ${CMAKE_OSX_SYSROOT}")
+  elseif(ANDROID)
+    string(APPEND flags " --sysroot=${CMAKE_SYSROOT}")
+  endif()
+
   list(APPEND env
     "CC=${CC_filename}"
-    "CFLAGS=--target=${CMAKE_C_COMPILER_TARGET}"
+    "CFLAGS=${flags}"
   )
 
   if(CMAKE_LINKER_TYPE MATCHES "LLD")
-    list(APPEND env "LDFLAGS=--target=${CMAKE_C_COMPILER_TARGET} -fuse-ld=lld")
+    list(APPEND env "LDFLAGS=${flags} -fuse-ld=lld")
   else()
-    list(APPEND env "LDFLAGS=--target=${CMAKE_C_COMPILER_TARGET}")
+    list(APPEND env "LDFLAGS=${flags}")
   endif()
 
   list(APPEND path "${CC_path}")

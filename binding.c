@@ -109,6 +109,7 @@ bare_exif_init_data(js_env_t *env, js_callback_info_t *info) {
   }
 
   bare_exif_data_t *data = malloc(sizeof(bare_exif_data_t));
+  assert(data != NULL);
 
   data->handle = handle;
 
@@ -168,6 +169,7 @@ bare_exif_init_entry(js_env_t *env, js_callback_info_t *info) {
   if (handle == NULL) return NULL;
 
   bare_exif_entry_t *entry = malloc(sizeof(bare_exif_entry_t));
+  assert(entry != NULL);
 
   entry->handle = handle;
 
@@ -312,12 +314,16 @@ bare_exif_save_data(js_env_t *env, js_callback_info_t *info) {
   js_value_t *result;
   void *output;
   err = js_create_arraybuffer(env, len, &output, &result);
-  assert(err == 0);
 
-  if (len > 0) {
-    memcpy(output, bytes, len);
+  if (err < 0) {
     free(bytes);
+
+    return NULL;
   }
+
+  if (len > 0) memcpy(output, bytes, len);
+
+  free(bytes);
 
   return result;
 }
