@@ -130,7 +130,7 @@ list(JOIN path ":" path)
 list(APPEND env "PATH=${path}")
 
 declare_port(
-  "github:libexif/libexif@0.6.25"
+  "github:libexif/libexif@0.6.26"
   exif
   AUTOTOOLS
   BYPRODUCTS lib/${lib}
