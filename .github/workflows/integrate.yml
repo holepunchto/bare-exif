@@ -43,7 +43,7 @@ jobs:
           source: ${{ matrix.source }}
           flags: --debug ${{ matrix.flags }}
       - run: sudo apt install autopoint
-        if: ${{ matrix.platform == 'linux' }}
+        if: ${{ matrix.platform == 'linux' || matrix.platform == 'wasi' }}
       - run: brew install autoconf automake libtool
         if: ${{ matrix.platform == 'darwin' }}
       - run: choco install msys2

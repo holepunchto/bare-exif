@@ -59,7 +59,7 @@ jobs:
     steps:
       - uses: holepunchto/actions/bare-base@v1
       - run: sudo apt install autopoint
-        if: ${{ matrix.platform == 'linux' || matrix.platform == 'android' }}
+        if: ${{ matrix.platform == 'linux' || matrix.platform == 'android' || matrix.platform == 'wasi' }}
       - run: brew install autoconf automake libtool
         if: ${{ matrix.platform == 'darwin' || matrix.platform == 'ios' }}
       - run: choco install msys2
