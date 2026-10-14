@@ -11,7 +11,6 @@ set(path)
 set(args
   --disable-shared
   --disable-docs
-  --disable-silent-rules
 
   --with-pic
 )
